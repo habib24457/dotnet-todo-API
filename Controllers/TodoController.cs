@@ -4,7 +4,7 @@ using TodoApi.Models;
 
 namespace TodoApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/todo")]
     [ApiController]
     public class TodoController : ControllerBase
     {
@@ -16,14 +16,30 @@ namespace TodoApi.Controllers
             _context = todoContext;
         }
 
-        // GET: Transaction
+        // GET: All todo
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var result = await _context.TodoItems.ToListAsync();
-            return Ok(result);
+            var items = await _context.TodoItems.ToListAsync();
+            return Ok(items);
         }
 
+        //Get one todo
+        [HttpGet]
+        [Route("{id:long}")]
+        public async Task<IActionResult> GetOne([FromRoute] long id)
+        {
+            var item = await _context.TodoItems.FindAsync(id);
+
+            if (item == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(item);
+        }
+
+        //Add Item
         [HttpPost]
         public async Task<IActionResult> CreateTodo([FromBody] TodoItem todoItem)
         {
@@ -36,9 +52,45 @@ namespace TodoApi.Controllers
             };
 
             _context.TodoItems.Add(addTodo);
+            await _context.SaveChangesAsync();
 
             return CreatedAtAction("CreateTodo", new { id = todoItem.Id }, todoItem);
         }
+
+        [HttpPut]
+        [Route("{id:long}")]
+        public async Task<IActionResult> UpdateTodo([FromBody] TodoItem todoItem, [FromRoute] long id)
+        {
+            var item = await _context.TodoItems.FindAsync(id);
+            if (item == null)
+            {
+                return NotFound();
+            }
+
+            item.Name = todoItem.Name;
+            item.IsComplete = todoItem.IsComplete;
+
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteItem(long id)
+        {
+            var todoItem = await _context.TodoItems.FindAsync(id);
+
+            if (todoItem == null)
+            {
+                return NotFound();
+            }
+
+            _context.TodoItems.Remove(todoItem);
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
 
     }
 }

@@ -9,9 +9,9 @@ namespace TodoApi.Controllers
     public class TodoController : ControllerBase
     {
 
-        private readonly TodoContext _context;
+        private readonly MyDbContext _context;
 
-        public TodoController(TodoContext todoContext)
+        public TodoController(MyDbContext todoContext)
         {
             _context = todoContext;
         }
